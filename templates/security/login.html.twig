@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Login to your account{% endblock %}
+{% block stylesheets %}
+
+    <link rel="stylesheet" type="text/css" href="{{ asset('/web/css/login.css') }}">
+{% endblock %}
+
+{% block body %}
+    {% if error %}
+        <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+    {% endif %}
+
+
+    <div class="signin-form">
+        <form method="post">
+
+
+
+            <div class="form-header">
+                <img style="width: 100px" src="{{ asset('web/images/konnecklogo.PNG') }}" alt="">
+                <h2 style="font-family: 'Bookman Old Style'">konneck</h2>
+                <p>Login and start konneck"ting"</p>
+            </div>
+
+            <div class="form-group">
+                <label for="inputEmail">Email</label>
+                <input type="email" placeholder="john@gmail.com" name="email" id="inputEmail" class="form-control"
+                       required autofocus>
+            </div>
+            <div class="form-group">
+                <label for="inputPassword">Password</label>
+                <input type="password" name="password" id="inputPassword" class="form-control" required>
+            </div>
+            <input type="hidden" name="_csrf_token"
+                   value="{{ csrf_token('authenticate') }}"
+            >
+            {#Uncomment this section and add a remember_me option below your firewall to activate remember me functionality.
+                See https://symfony.com/doc/current/security/remember_me.html#}
+
+            <div class="form-group checkbox mb-3">
+                <label>
+                    <input type="checkbox" name="_remember_me"> Remember me
+                </label>
+            </div>
+            <div class="small">Forgot password? <a href="../main_screens/forgot_pass.php">Click Here</a></div>
+            <br>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary btn-block btn-lg" name="sign_in">Sign in</button>
+            </div>
+
+        </form>
+        <div class="text-center small" style='color:#67428B;'>Don't have an account? <a href="{{path('app_register')}}">Create
+                one</a></div>
+    </div>
+{% endblock %}

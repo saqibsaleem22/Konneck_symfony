@@ -1,0 +1,157 @@
+{% extends 'base.html.twig' %}
+{% block stylesheets %}
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="{{asset('web/css/home.css')}}">
+{% endblock %}
+
+{% block body %}
+    <div class="container main-section">
+        <div class="row">
+            <div class="col-md-3 col-sm-3 col-xs-12 left-sidebar">
+                <div class="input-group searchbox" style="background: orange">
+
+
+                    <div class="right-header-img">
+                        <img src="{{ app.user.userAvatar }}" alt="profile pic">
+                    </div>
+                    <div class="right-header-detail">
+
+                            <p></p>
+                        <a href="{{ path('profile') }}"><span style="font-size: large; color: black">{{ app.user.name }}</span></a>&nbsp &nbsp
+                            <a href="{{ path('app_logout') }}" class="btn btn-danger">Logout</a>
+
+
+                    </div>
+                </div>
+                <div class="left-chat" style="height: 524px; background: cornflowerblue;">
+                    <ul>
+                        {% for elem in others %}
+                        <li>
+                            <!--
+                            <div class='chat-left-img'>
+                                <img src='$user_profile'>
+                            </div>
+                            <div class='chat-left-detail'>
+                                <p><a href='home.php?user_email=$user_email'>$user_name</a></p>";
+                                if($login == 'Online'){
+                                echo "<span><i class='fa fa-circle' aria-hidden='true'></i> Online</span>";
+                                }else{
+                                echo "<span><i class='fa fa-circle-o' aria-hidden='true'></i> Offline</span>";
+                                }
+
+                                "
+                            </div> -->
+                            <div class='chat-left-img'>
+                                <img src='{{ elem.userAvatar }}'>
+                            </div>
+                            <div class='chat-left-detail'>
+                                <p><a href="javascript:loadDetails({{ elem.id }})" style="font-size: medium; color: darkblue" >{{ elem.name }}</a></p>
+                                {% if elem.userStatus == 'offline' %}
+                                <span style="color: white"><i class='fa fa-circle-o' aria-hidden='true'></i> Offline</span>
+                                {% endif %}
+                                {% if elem.userStatus == 'online' %}
+                                    <span><i class='fa fa-circle' aria-hidden='true'></i> Online</span>
+                                {% endif %}
+
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div style="visibility: hidden" id="messages-bar" class="col-md-9 col-sm-9 col-xs-12 right-sidebar">
+                <div class="row">
+
+                    <!-- getting the user data on which user click -->
+
+                    <div class="col-md-12 right-header">
+                        <div class="right-header-img">
+                            <img id="clicked-user" >
+                        </div>
+                        <div class="right-header-detail">
+                            <form method="post">
+                                <p id="clicked-user-name"></p>
+                                <span>3 new messages</span>&nbsp &nbsp
+
+                            </form>
+                            <div style="width: 20px"></div>
+
+                        </div>
+                    </div>
+
+                </div>
+                <div class="row">
+                    <div id="scrolling_to_bottom" class="col-md-12 right-header-contentChat" style="height: 453px;">
+
+                    </div>
+                </div>
+                <div class="row">
+                    <div style="height: 85px" class="col-md-4 right-chat-textbox">
+
+                        <form id="myform">
+                            <input id="msg-content" autocomplete="off" type="text" name="msg-content" placeholder="Write your message...">
+                            <div class="image_upload">
+                                <label for="fileToUpload">
+                                    <img src="{{ asset('web/images/uploadImage.png') }}"/>
+                                </label>
+                                <!--Input for file or image-->
+                                <input type="file" name="fileToUpload" id="fileToUpload">
+                            </div>
+                            <button class="btn"  name="submit"><i class="fa fa-telegram" aria-hidden="true"></i></button>
+
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <script>
+        let show = false;
+        let user;
+        function loadDetails(id) {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    let jsonResponse = JSON.parse(this.responseText);
+                    console.log(jsonResponse)
+                    user = jsonResponse['user'];
+                    document.getElementById('clicked-user').src = jsonResponse['user']['userAvatar']
+                    document.getElementById('clicked-user-name').innerText = jsonResponse['user']['name']
+                    if(show == false) {
+                        show = true;
+                        document.getElementById('messages-bar').style.visibility = 'visible'
+                    }
+
+                }
+            };
+            xhttp.open("GET", "/loadDetails/"+id, true);
+            xhttp.send();
+        }
+
+
+            function inicio() {
+                document.getElementById('myform').addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const formData = new FormData(this);
+                    var xhttp = new XMLHttpRequest();
+                    xhttp.onreadystatechange = function() {
+                        if (this.readyState == 4 && this.status == 200) {
+                            let jsonResponse = JSON.parse(this.responseText);
+                            console.log(jsonResponse)
+
+                        }
+                    };
+                    xhttp.open("post", "/sendMessage/"+user['id'], true);
+                    xhttp.send(formData);
+
+                })
+            }
+            window.onload = inicio();
+
+
+    </script>
+
+{% endblock %}

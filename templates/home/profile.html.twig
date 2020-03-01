@@ -1,0 +1,102 @@
+{% extends 'base.html.twig' %}
+{% block stylesheets %}
+    <link rel="stylesheet" type="text/css" href="css/.css">
+{% endblock %}
+{% block body %}
+    <div style="height: 60px; background: black;color: white;padding: 20px; font-weight: bold "><a style="color: white; font-size: 2rem; text-decoration: none" href="{{ path('home') }}">konneck</a></div>
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-success">
+            {{ message }}
+        </div>
+    {% endfor %}
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">
+            {{ message }}
+        </div>
+    {% endfor %}
+    <div class="row">
+
+        <div class="col-sm-8">
+            <form action="{{ path('modifyProfile', {id: app.user.id}) }}" method="post" enctype="multipart/form-data">
+                <table class="table table-bordered table-hover">
+                    <tr align="center">
+                        <td colspan="6" class="active"><h2>Change Account Settings</h2></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: bold;">Change Your Username</td>
+                        <td>
+                            <input class="form-control" type="text" name="u_name" required="required" value="{{ app.user.name }}"/>
+                        </td>
+                    </tr>
+
+                    <tr><td><img width="200px" height="200px" src="{{ app.user.userAvatar }}" alt=""></td><td><input name="u_avatar" type="file" class="btn btn-default" accept="image/*" style="text-decoration: none;font-size: 15px;"></td></tr>
+
+                    <tr>
+                        <td style="font-weight: bold;">Email</td>
+                        <td>
+                            <input class="form-control" type="email" name="u_email" required="required" value="{{ app.user.email }}" disabled></td>
+                    </tr>
+
+
+                    <tr>
+                        <td style="font-weight: bold;">City</td>
+                        <td>
+                            <input class="form-control" type="text" value="{{ app.user.userCity }}" disabled>
+                        </td>
+
+                    </tr>
+                    <tr>
+                        <td>
+
+                        </td>
+                        <td>
+                            <select class="form-control" name="u_city">
+                                <option></option>
+                                <option>Madrid</option>
+                                <option>Barcelona</option>
+                                <option>Valencia</option>
+                                <option>Málaga</option>
+                                <option>Córdoba</option>
+                            </select>
+                        </td>
+                    </tr>
+
+
+
+                    <tr>
+                        <td style="font-weight: bold;">Gender</td>
+                        <td><input class="form-control" type="text" value="{{ app.user.userGender}}" disabled></td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>
+                            <select class="form-control" name="u_gender">
+                                <option></option>
+                                <option>Male</option>
+                                <option>Female</option>
+                                <option>Other</option>
+                            </select>
+                        </td>
+                    </tr>
+
+
+
+                    <tr><td style="font-weight: bold;">Change password</td>
+                        <td>Current Password: <input minlength="6" name="u_pass" type="password"><br>New Password: <input name="new_pass" minlength="6" type="password"></td></tr>
+
+                    <tr align="center">
+                        <td colspan="6">
+                            <input class="btn btn-info" style="width: 250px;" type="submit" name="update" value="Update"/>
+                        </td>
+                    </tr>
+                </table>
+            </form>
+
+
+
+            </div>
+            <div class="col-sm-2">
+                </div>
+                </div>
+
+{% endblock %}

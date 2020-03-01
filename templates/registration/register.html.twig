@@ -1,0 +1,48 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Register{% endblock %}
+{%  block stylesheets %} <link rel="stylesheet" type="text/css" href="{{ asset('/web/css/registration.css') }}">{% endblock %}
+{% block body %}
+    {% for messages in app.flashes('success') %}
+        <div class="alert alert-success">
+            {{ messages }}
+        </div>
+    {% endfor %}
+<div class="signup-form">
+
+  {{ form_start(registrationForm) }}
+    <div class="form-header">
+        <img style="width: 100px" src="{{asset('web/images/konnecklogo.PNG')}}" alt="">
+        <h2 style="font-family: 'Bookman Old Style'">konneck</h2>
+        <p>Register and start konneck"ting"</p>
+    </div>
+    <div class="form-group">
+        {{ form_row(registrationForm.userName) }}
+    </div>
+    <div class="form-group">
+        {{ form_row(registrationForm.email) }}
+    </div>
+    <div class="form-group">
+        {{ form_row(registrationForm.plainPassword) }}
+    </div>
+    <div class="form-group">
+        {{ form_row(registrationForm.userCity) }}
+    </div>
+    <div class="form-group">
+
+    </div>
+    <div class="form-group">
+        {{ form_row(registrationForm.userGender) }}
+    </div>
+    <div class="form-group">
+        <label class="checkbox-inline">{{ form_row(registrationForm.agreeTerms) }} I accept the <a href="#">Terms of Use</a> &amp; <a href="#">Privacy Policy</a></label>
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary btn-block btn-lg" name="sign_up">Sign Up</button>
+    </div>
+
+    {{ form_end(registrationForm) }}
+    <div class="text-center small">Already have an account? <a href="{{path('app_login')}}">Signin here</a></div>
+
+</div>
+{% endblock %}
