@@ -48,6 +48,18 @@ class Message
      */
     private $msgType;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $attachments;
+
+    /**
+     * @ORM\Column(type="datetime")
+     */
+    private $dateTime;
+
+
+
 
     public function getId(): ?int
     {
@@ -122,6 +134,30 @@ class Message
     public function setMsgType(string $msgType): self
     {
         $this->msgType = $msgType;
+
+        return $this;
+    }
+
+    public function getAttachments(): ?string
+    {
+        return $this->attachments;
+    }
+
+    public function setAttachments(?string $attachments): self
+    {
+        $this->attachments = $attachments;
+
+        return $this;
+    }
+
+    public function getDateTime(): ?\DateTimeInterface
+    {
+        return $this->dateTime;
+    }
+
+    public function setDateTime(\DateTimeInterface $dateTime): self
+    {
+        $this->dateTime = $dateTime;
 
         return $this;
     }

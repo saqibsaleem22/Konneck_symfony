@@ -4,6 +4,16 @@
     <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <link rel="stylesheet" type="text/css" href="{{asset('web/css/home.css')}}">
+    <style>
+        body {
+            overflow: hidden!important;
+            background: url("{{ asset('web/images/backgroundImage.jpg') }}");
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position-y: -100px;
+            background-position-x: 20px;
+        }
+    </style>
 {% endblock %}
 
 {% block body %}
@@ -24,6 +34,7 @@
 
 
                     </div>
+                    <p id="newMessages"></p>
                 </div>
                 <div class="left-chat" style="height: 524px; background: cornflowerblue;">
                     <ul>
@@ -48,13 +59,14 @@
                             </div>
                             <div class='chat-left-detail'>
                                 <p><a href="javascript:loadDetails({{ elem.id }})" style="font-size: medium; color: darkblue" >{{ elem.name }}</a></p>
+                                <span id="{{ elem.id }}">
                                 {% if elem.userStatus == 'offline' %}
-                                <span style="color: white"><i class='fa fa-circle-o' aria-hidden='true'></i> Offline</span>
+                                    <span style="color: white"><i class='fa fa-circle-o' aria-hidden='true'></i> Offline</span>
                                 {% endif %}
-                                {% if elem.userStatus == 'online' %}
-                                    <span><i class='fa fa-circle' aria-hidden='true'></i> Online</span>
-                                {% endif %}
-
+                                    {% if elem.userStatus == 'online' %}
+                                        <span><i class='fa fa-circle' aria-hidden='true'></i> Online</span>
+                                    {% endif %}
+                                </span>
                             </div>
                         </li>
                         {% endfor %}
@@ -73,7 +85,7 @@
                         <div class="right-header-detail">
                             <form method="post">
                                 <p id="clicked-user-name"></p>
-                                <span>3 new messages</span>&nbsp &nbsp
+                                <span></span>&nbsp &nbsp
 
                             </form>
                             <div style="width: 20px"></div>
@@ -84,7 +96,7 @@
                 </div>
                 <div class="row">
                     <div id="scrolling_to_bottom" class="col-md-12 right-header-contentChat" style="height: 453px;">
-
+                        <ul id="messagesBox"></ul>
                     </div>
                 </div>
                 <div class="row">
@@ -109,17 +121,30 @@
         </div>
     </div>
     <script>
+        let current = {{ app.user.id }};
+        let currentName = {{ app.user.name|json_encode()|raw }};
+        let other;
+        let otherName;
         let show = false;
-        let user;
+
         function loadDetails(id) {
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function() {
                 if (this.readyState == 4 && this.status == 200) {
                     let jsonResponse = JSON.parse(this.responseText);
-                    console.log(jsonResponse)
-                    user = jsonResponse['user'];
-                    document.getElementById('clicked-user').src = jsonResponse['user']['userAvatar']
-                    document.getElementById('clicked-user-name').innerText = jsonResponse['user']['name']
+                    other = jsonResponse['user']['id'];
+                    otherName = jsonResponse['user']['name'];
+                    let allMessages = jsonResponse['allMessages'];
+                    console.log(allMessages);
+                    console.log(current);
+                    console.log(currentName);
+                    console.log(other);
+                    console.log(otherName);
+                    updateMessages(current, other, allMessages);
+
+                    document.getElementById('clicked-user').src = jsonResponse['user']['userAvatar'];
+                    document.getElementById('clicked-user-name').innerHTML = "<a href='/showProfileOther/"+other+"'>"+jsonResponse['user']['name']+"</a>";
+
                     if(show == false) {
                         show = true;
                         document.getElementById('messages-bar').style.visibility = 'visible'
@@ -133,6 +158,15 @@
 
 
             function inicio() {
+                newMessages();
+                setInterval(() => {
+                    if(other != undefined) {
+                        loadDetails(other);
+                    }
+                    newMessages();
+                    onlineStatus();
+                },20000);
+                console.log(currentName)
                 document.getElementById('myform').addEventListener('submit', function(e) {
                     e.preventDefault();
                     const formData = new FormData(this);
@@ -141,14 +175,91 @@
                         if (this.readyState == 4 && this.status == 200) {
                             let jsonResponse = JSON.parse(this.responseText);
                             console.log(jsonResponse)
+                            loadDetails(other);
 
                         }
                     };
-                    xhttp.open("post", "/sendMessage/"+user['id'], true);
+                    xhttp.open("post", "/sendMessage/"+other, true);
                     xhttp.send(formData);
+                    this.reset();
 
                 })
             }
+
+            function updateMessages(current, other, allMessages) {
+
+                sendBox = document.getElementById('messagesBox');
+                let stringAllMessages = '';
+                allMessages.forEach((message, index) => {
+
+                    let senderId = message['senderId'];
+                    let receiverId = message['receiverId'];
+                    if(senderId == current && receiverId == other) {
+                        if(message['msgType'] != 'text'){
+                            stringAllMessages += "<li><div class='rightside-right-chat'> <span>"+currentName+" <small>"+message['dateTime']+"</small> </span><br><br> <p><a href="+"../web/images/"+message['attachments']+"><img onerror='this.onerror=null;this.src=`../web/images/file.png`' width='60px' height='60px' src="+"../web/images/"+message['attachments']+" alt='' ></a>"+" "+message['msgContent']+"</p> </div></li>"
+                        } else {
+                            stringAllMessages += "<li><div class='rightside-right-chat'> <span>"+currentName+" <small>"+message['dateTime']+"</small> </span><br><br> <p>"+message['msgContent']+"</p> </div></li>"
+                        }
+
+                    } else if(senderId == other && receiverId == current) {
+                        if(message['msgType'] != 'text'){
+                            stringAllMessages += "<li><div class='rightside-left-chat'> <span>"+otherName+" <small>"+message['dateTime']+"</small> </span><br><br> <p><a href="+"../web/images/"+message['attachments']+"><img onerror='this.onerror=null;this.src=`../web/images/file.png`' width='60px' height='60px' src="+"../web/images/"+message['attachments']+" alt='' ></a>"+" "+message['msgContent']+"</p> </div></li>"
+                        } else {
+                            stringAllMessages += "<li><div class='rightside-left-chat'> <span>"+otherName+" <small>"+message['dateTime']+"</small> </span><br><br> <p>"+message['msgContent']+"</p> </div></li>"
+                        }
+                    }
+                }
+
+            )
+
+                sendBox.innerHTML = stringAllMessages;
+                var objDiv = document.getElementById("scrolling_to_bottom");
+                objDiv.scrollTop = objDiv.scrollHeight;
+        }
+
+        function newMessages() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    let jsonResponse = JSON.parse(this.responseText);
+                    console.log(jsonResponse)
+                    document.getElementById("newMessages").innerText = jsonResponse['total'].length+" new messages";
+
+                }
+            };
+            xhttp.open("GET", "/newMessages", true);
+            xhttp.send();
+        }
+
+        function onlineStatus() {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    let jsonResponse = JSON.parse(this.responseText);
+                    jsonResponse = jsonResponse['all']
+                    jsonResponse.forEach((element, index) => {
+                        let id = element['id'];
+                        console.log(id)
+                        let status = element['userStatus'];
+
+
+                        if(id != current) {
+                            let span = document.getElementById(id);
+                            if(status == 'offline') {
+                                span.innerHTML = `<span style="color: white"><i class='fa fa-circle-o' aria-hidden='true'></i> Offline</span>`
+                            } else {
+                                span.innerHTML = `<span><i class='fa fa-circle' aria-hidden='true'></i> Online</span>`
+                            }
+                        }
+
+
+                    })
+                }
+            };
+            xhttp.open("GET", "/onlineStatus", true);
+            xhttp.send();
+        }
+
             window.onload = inicio();
 
 

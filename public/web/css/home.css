@@ -189,3 +189,7 @@
     width: 10px;
     cursor: pointer;
 }
+
+ul {
+    list-style: none;
+}

@@ -5,6 +5,7 @@ namespace App\Controller;
 
 use App\Entity\Message;
 use App\Entity\User;
+use App\Repository\MessageRepository;
 use App\Repository\UserRepository;
 use App\Services\FileUploader;
 use PhpParser\Node\Scalar\MagicConst\File;
@@ -88,18 +89,44 @@ class MessageController extends AbstractController
     /**
      * @Route("/loadDetails/{id}", name="loadDetails")
      */
-    public function loadDetailsOfUser(User $user)
+    public function loadDetailsOfUser(User $user, MessageRepository $messageRepository)
     {
+        $em = $this->getDoctrine()->getManager();
+        $currentUserId = $this->getUser()->getId();
+        $otherUserId = $user->getId();
+        $sentMessages = $messageRepository->findBy(['senderId'=>$currentUserId, 'receiverId'=>$otherUserId]);
+        $receivedMessages = $messageRepository->findBy(['senderId'=>$otherUserId, 'receiverId'=>$currentUserId]);
+        foreach($receivedMessages as $received) {
+            $received->setMsgStatus('read');
+            $em->persist($received);
+            $em->flush();
+        }
+
+
+        $allMessages = Array();
+        foreach($sentMessages as $sent) {
+            array_push($allMessages, $sent);
+        }
+        foreach($receivedMessages as $received) {
+            array_push($allMessages, $received);
+        }
+
+        usort($allMessages,function($first,$second){
+            return $first->getId() > $second->getId();
+        });
+
+
 
         return $this->json([
-            'user' => $user
+            'user' => $user,
+            'allMessages' => $allMessages,
         ]);
     }
 
     /**
      * @Route("/sendMessage/{id}", name="sendMessage")
      */
-    public function sendMessage(Request $request, User $user) {
+    public function sendMessage(Request $request, User $user,FileUploader $fileUploader) {
         $current_user = $this->getUser();
         $file = $request->files->get('fileToUpload');
 
@@ -111,13 +138,18 @@ class MessageController extends AbstractController
         $newMessage->setMsgContent($message);
         $newMessage->setReceiverId($user->getId());
         $newMessage->setMsgDate(new \DateTime('now'));
+        $newMessage->setDateTime(new \DateTime('now'));
         $newMessage->setSenderId($current_user->getId());
 
         $newMessage->setMsgStatus('unread');
         if(!$file){
             $newMessage->setMsgType('text');
         } else {
+
+            $fileName = $fileUploader->uploadFile($file);
+            $newMessage->setAttachments($fileName);
             $newMessage->setMsgType('file');
+
         }
 
         $em = $this->getDoctrine()->getManager();
@@ -125,7 +157,41 @@ class MessageController extends AbstractController
 
         $em->flush();
 
-        return $this->json();
+        return $this->json([]);
 
     }
+    /**
+     * @Route("/showProfileOther/{id}", name="showProfileOther")
+     */
+    public function showProfileOther(User $user) {
+        return $this->render('home/profileOther.html.twig', [
+            'userOther' => $user
+        ]);
+    }
+
+    /**
+     * @Route("/newMessages", name="newMessages")
+     */
+    public function newMessages(MessageRepository $messageRepository) {
+
+        $id = $this->getUser();
+        $id = $id->getId();
+        $messages = $messageRepository->findBy(['receiverId'=>$id, 'msgStatus'=>'unread']);
+        return $this->json([
+            'total' => $messages
+        ]);
+    }
+
+    /**
+     * @Route("/onlineStatus", name="onlinestatus")
+     */
+    public function onlineStatusCheck(UserRepository $userRepository) {
+        $all = $userRepository->findAll();
+
+        return $this->json(
+        ['all' => $all]
+        );
+    }
+
+
 }
