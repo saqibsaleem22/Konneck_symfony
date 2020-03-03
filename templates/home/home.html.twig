@@ -30,7 +30,7 @@
 
                             <p></p>
                         <a href="{{ path('profile') }}"><span style="font-size: large; color: black">{{ app.user.name }}</span></a>&nbsp &nbsp
-                            <a href="{{ path('app_logout') }}" class="btn btn-danger">Logout</a>
+                            <a href="{{ path('logOutFromApp') }}" class="btn btn-danger">Logout</a>
 
 
                     </div>
@@ -165,7 +165,7 @@
                     }
                     newMessages();
                     onlineStatus();
-                },20000);
+                },10000);
                 console.log(currentName)
                 document.getElementById('myform').addEventListener('submit', function(e) {
                     e.preventDefault();
@@ -260,7 +260,7 @@
             xhttp.send();
         }
 
-            window.onload = inicio();
+        window.onload = inicio();
 
 
     </script>

@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+{% block stylesheets %}
+
+{% endblock %}
+
+{% block body %}
+    {% for messages in app.flashes('success') %}
+        <div class="alert alert-success">
+            {{ messages }}
+        </div>
+    {% endfor %}
+    <a href="{{ path('app_login') }}">Go to Login page</a>
+    <div>
+        <form action="/recover" method="post">
+            <h3>Enter your email address</h3>
+            Email:<input type="email" name="email">
+            <button type="submit">Send Recovery Link</button>
+
+        </form>
+
+    </div>
+
+
+{% endblock %}

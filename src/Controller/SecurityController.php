@@ -2,17 +2,25 @@
 
 namespace App\Controller;
 
+use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
+
+
 class SecurityController extends AbstractController
 {
-
-
-
+    /**
+     * @Route("/", name="start")
+     * @param AuthenticationUtils $authenticationUtils
+     * @return Response
+     */
+    public function start() {
+        return $this->redirectToRoute('app_login');
+    }
 
     /**
      * @Route("/login", name="app_login")
@@ -21,9 +29,9 @@ class SecurityController extends AbstractController
      */
     public function login(AuthenticationUtils $authenticationUtils): Response
     {
-        // if ($this->getUser()) {
-        //     return $this->redirectToRoute('target_path');
-        // }
+        if ($this->getUser()) {
+            return $this->redirectToRoute('home');
+         }
 
         // get the login error if there is one
         $error = $authenticationUtils->getLastAuthenticationError();
@@ -36,8 +44,18 @@ class SecurityController extends AbstractController
     /**
      * @Route("/logout", name="app_logout")
      */
-    public function logout()
+    public function logout(UserRepository $userRepository)
     {
-        throw new \Exception('This method can be blank - it will be intercepted by the logout key on your firewall');
+        $currentId = $this->getUser()->getId();
+
+        $currentUser = $userRepository->find($currentId);
+        $currentUser->setUserStatus('offline');
+
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($currentUser);
+        $em->flush();
+        return $this->redirectToRoute('app_login');
     }
+
+
 }

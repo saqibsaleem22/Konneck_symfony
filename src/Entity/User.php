@@ -67,7 +67,12 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="boolean")
      */
-    private $isEnabled;
+    private $isActive;
+
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $confirmationToken;
 
 
 
@@ -208,14 +213,26 @@ class User implements UserInterface
         return $this;
     }
 
-    public function getIsEnabled(): ?bool
+    public function getIsActive(): ?bool
     {
-        return $this->isEnabled;
+        return $this->isActive;
     }
 
-    public function setIsEnabled(bool $isEnabled): self
+    public function setIsActive(bool $isActive): self
     {
-        $this->isEnabled = $isEnabled;
+        $this->isActive = $isActive;
+
+        return $this;
+    }
+
+    public function getConfirmationToken(): ?string
+    {
+        return $this->confirmationToken;
+    }
+
+    public function setConfirmationToken(?string $confirmationToken): self
+    {
+        $this->confirmationToken = $confirmationToken;
 
         return $this;
     }

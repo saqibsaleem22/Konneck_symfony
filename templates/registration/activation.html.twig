@@ -1,0 +1,5 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+    Click this link to activate your konneck account.
+    <a href="http://127.0.0.1:8000/user/activate/{{ confirmationToken }}">http://127.0.0.1:8000/user/activate/{{ confirmationToken }}</a>
+{% endblock %}

@@ -66,10 +66,12 @@ class KonneckAuthenticator extends AbstractFormLoginAuthenticator implements Pas
         }
 
         $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $credentials['email']]);
-
+        $active = $user->getIsActive();
         if (!$user) {
             // fail authentication with a custom error
             throw new CustomUserMessageAuthenticationException('Email could not be found.');
+        } elseif ($active == false) {
+            throw new CustomUserMessageAuthenticationException('User not activated check email to activate.');
         }
 
         return $user;

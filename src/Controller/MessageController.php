@@ -13,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use function Symfony\Component\String\u;
 
 class MessageController extends AbstractController
@@ -24,12 +25,18 @@ class MessageController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
         $current_user = $this->getUser();
-        $allUsers = $userRepository->findAll();
+        $allUsers = $userRepository->findby(['isActive'=>true]);
         $others = Array();
 
         foreach ($allUsers as $use) {
             if($use->getId() != $current_user->getId()) {
                 array_push($others, $use);
+            }
+            if($use->getId() == $current_user->getId()){
+                $use->setUserStatus('online');
+                $em = $this->getDoctrine()->getManager();
+                $em->persist(($use));
+                $em->flush();
             }
         }
 
@@ -49,15 +56,19 @@ class MessageController extends AbstractController
     /**
      * @Route("/modifyProfile/{id}", name="modifyProfile")
      */
-    public function editProfile(Request $request, User $user, FileUploader $fileUploader) {
+    public function editProfile(Request $request, User $user, FileUploader $fileUploader,UserPasswordEncoderInterface $passwordEncoder) {
         $userName = $request->request->get('u_name');
         $userCity = $request->request->get('u_city');
         $userGender = $request->request->get('u_gender');
         $file = $request->files->get('u_avatar');
+
         $userPassword = $request->get('u_pass');
         $newPassword = $request->get('new_pass');
-        if($userPassword == $user->getPassword() && $newPassword != ''){
-            $user->setPassword($newPassword);
+
+        $match = $passwordEncoder->isPasswordValid($user, $userPassword);
+
+        if($match && $newPassword != ''){
+            $user->setPassword($passwordEncoder->encodePassword($user, $newPassword));
 
         }
         if($userName != ''){
@@ -191,6 +202,21 @@ class MessageController extends AbstractController
         return $this->json(
         ['all' => $all]
         );
+    }
+
+    /**
+     * @Route("/logOutFromApp", name="logOutFromApp")
+     */
+    public function logOutFromApp(UserRepository $userRepository) {
+        $currentId = $this->getUser()->getId();
+
+        $currentUser = $userRepository->find($currentId);
+        $currentUser->setUserStatus('offline');
+
+        $em = $this->getDoctrine()->getManager();
+        $em->persist($currentUser);
+        $em->flush();
+        return $this->redirectToRoute('app_logout');
     }
 
 
